@@ -15,6 +15,7 @@ const VERDICT_LABELS := {
 
 var _summary: Label
 var _best: Label
+var _ranking: Label
 var _retry: Button
 var _list: VBoxContainer
 
@@ -27,6 +28,7 @@ func _ready() -> void:
 func show_shift(shift: InspectionShift, new_record: bool) -> void:
 	for child in _list.get_children():
 		child.queue_free()
+	_ranking.text = ""
 	var correct := 0
 	for i in shift.results.size():
 		var result: Dictionary = shift.results[i]
@@ -46,6 +48,11 @@ func show_shift(shift: InspectionShift, new_record: bool) -> void:
 		return
 	_best.text = ("ベストスコア更新！" if new_record else "ベストスコア %d" % BestScore.best())
 	_retry.text = "次のシフトへ"
+
+
+func show_ranking(text: String, ok: bool) -> void:
+	_ranking.text = text
+	_ranking.add_theme_color_override("font_color", UiKit.TEXT_DIM if ok else UiKit.BAD)
 
 
 func _draw() -> void:
@@ -91,6 +98,8 @@ func _build() -> void:
 	root.add_child(_summary)
 	_best = UiKit.label("", 22, UiKit.TEXT_DIM)
 	root.add_child(_best)
+	_ranking = UiKit.label("", 18, UiKit.TEXT_DIM)
+	root.add_child(_ranking)
 
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = LIST_SIZE

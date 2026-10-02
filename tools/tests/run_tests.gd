@@ -5,6 +5,9 @@ const SHIFT_PATH := "res://data/shift_default.tres"
 const TRAINING_PATH := "res://data/shift_training.tres"
 const TEST_BEST_PATH := "user://test_best_score.cfg"
 const SAMPLE_SHIFTS := 200
+## Python の hmac で作った期待値(キーはテスト用の "nisesatsu-test-key")
+const RANKING_TEST_KEY := "bmlzZXNhdHN1LXRlc3Qta2V5"
+const RANKING_TEST_SIGNATURE := "35f22b97f7354d1b4322465d56a31ac5c1dc4804e19027331d69241cd6abcc44"
 
 var _failures := 0
 var _currency: CurrencyData
@@ -28,6 +31,7 @@ func _run() -> void:
 		_test_scoring()
 		_test_training()
 		_test_best_score()
+		_test_ranking()
 
 	if _failures > 0:
 		printerr("tests FAILED: ", _failures)
@@ -144,6 +148,24 @@ func _test_training() -> void:
 			seen_tools[_currency.feature_data(scripted.defect_feature).tool] = true
 		shift.judge(GameEnums.Verdict.ACCEPT)
 	_check(seen_tools.size() == GameEnums.Tool.size(), "研修で全ての道具を使う偽札が出る")
+
+
+func _test_ranking() -> void:
+	var path := UnityroomRanking.SCORE_PATH % 1
+	_check(
+		(
+			UnityroomRanking.signature(RANKING_TEST_KEY, path, "1700000000", "350")
+			== RANKING_TEST_SIGNATURE
+		),
+		"ランキングの署名が HMAC-SHA256 と一致する"
+	)
+	_check(UnityroomRanking.signature("", path, "0", "0").is_empty(), "キーが空なら署名しない")
+	var config: RankingConfig = load(UnityroomRanking.CONFIG_PATH)
+	_check(config != null and config.scoreboard_id > 0, "ランキングの設定が読める")
+	var ranking := UnityroomRanking.new()
+	_check(not ranking.should_send(0), "0点はランキングに送らない")
+	_check(ranking.should_send(1), "1点はランキングに送る")
+	ranking.free()
 
 
 func _test_best_score() -> void:

@@ -20,6 +20,7 @@ var _best_label: Label
 var _title: Control
 var _inspector: InspectorScreen
 var _result: ResultScreen
+var _ranking: UnityroomRanking
 
 
 func _ready() -> void:
@@ -31,6 +32,9 @@ func _ready() -> void:
 	_result = ResultScreen.new()
 	_result.retry_requested.connect(_start_shift.bind(_config))
 	add_child(_result)
+	_ranking = UnityroomRanking.new()
+	_ranking.finished.connect(_on_ranking_finished)
+	add_child(_ranking)
 	_show_title()
 
 
@@ -50,6 +54,23 @@ func _on_shift_finished(shift: InspectionShift) -> void:
 	var new_record := shift.config.records_best_score and BestScore.submit(shift.score)
 	_result.show_shift(shift, new_record)
 	_show_only(_result)
+	if shift.config.records_best_score and _ranking.is_available():
+		_send_ranking(shift.score)
+
+
+func _send_ranking(score: int) -> void:
+	if not _ranking.should_send(score):
+		_result.show_ranking("得点が0点以下のため、ランキングには送りません", false)
+		return
+	_result.show_ranking("ランキングへ送信中…", true)
+	_ranking.send(score)
+
+
+func _on_ranking_finished(ok: bool) -> void:
+	if ok:
+		_result.show_ranking("ランキングへ送信しました", true)
+	else:
+		_result.show_ranking("ランキングへ送信できませんでした", false)
 
 
 func _show_only(screen: Control) -> void:

@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="RankingConfig" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/ranking_config.gd" id="1_rank"]
+
+[resource]
+script = ExtResource("1_rank")
