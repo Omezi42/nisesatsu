@@ -36,7 +36,6 @@ var _view: BanknoteView
 var _book: ReferenceBook
 var _tool_box: VBoxContainer
 var _tool_buttons := {}
-var _tool_names := {}
 var _progress_label: Label
 var _score_label: Label
 var _mode_label: Label
@@ -112,9 +111,6 @@ func _on_tool_pressed(tool: GameEnums.Tool) -> void:
 		_set_mode(GameEnums.ViewMode.NORMAL)
 		_update_tools()
 		return
-	if not _shift.use_tool(tool):
-		_status_label.text = "%sはもう使えません。" % _tool_names[tool]
-		return
 	match tool:
 		GameEnums.Tool.LOUPE:
 			_view.loupe_enabled = not _view.loupe_enabled
@@ -155,12 +151,6 @@ func _update_tools() -> void:
 		var button: Button = _tool_buttons[tool]
 		var active := _is_tool_active(tool)
 		UiKit.set_button_color(button, UiKit.BUTTON_ACTIVE if active else UiKit.BUTTON)
-		if tool == GameEnums.Tool.NAKED_EYE:
-			continue
-		var unlocked := _shift.is_unlocked(tool)
-		var suffix := "この紙幣は使用済み" if unlocked else "残り %d" % _shift.uses_left(tool)
-		button.text = "%s　（%s）" % [_tool_names[tool], suffix]
-		button.disabled = not unlocked and _shift.uses_left(tool) <= 0
 	_mode_label.text = ("表示: %s%s" % [MODE_LABELS[_mode], "＋ルーペ" if _view.loupe_enabled else ""])
 
 
@@ -284,7 +274,6 @@ func _rebuild_tool_buttons() -> void:
 	for child in _tool_box.get_children():
 		child.queue_free()
 	_tool_buttons.clear()
-	_tool_names.clear()
 	_add_tool_button(_tool_box, GameEnums.Tool.NAKED_EYE, "目視")
 	for tool_data in _shift.config.tools:
 		_add_tool_button(_tool_box, tool_data.tool, tool_data.display_name)
@@ -295,4 +284,3 @@ func _add_tool_button(parent: Control, tool: GameEnums.Tool, label_text: String)
 	button.pressed.connect(_on_tool_pressed.bind(tool))
 	parent.add_child(button)
 	_tool_buttons[tool] = button
-	_tool_names[tool] = label_text

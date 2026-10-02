@@ -5,4 +5,3 @@
 [resource]
 script = ExtResource("1_6j7kb")
 display_name = "ルーペ"
-uses_per_shift = 4

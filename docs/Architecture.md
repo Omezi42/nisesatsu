@@ -16,7 +16,7 @@
 |---|---|
 | `GameEnums` | `Feature` / `Tool` / `ViewMode` / `Verdict`。**値は末尾にだけ足す**(`.tres` が整数で保存する) |
 | `FeatureData` | セキュリティ要素1つ。見る道具、1段あたりの費用、再現度ごとの欠陥の説明 |
-| `ToolData` | 道具1つ。シフトあたりの使用回数 |
+| `ToolData` | 道具1つ。表示名 |
 | `DenominationData` | 券種。額面と地色 |
 | `CurrencyData` | 通貨。券種・要素・発行局コード一覧・微小文字。`MAX_LEVEL`(=3、本物の再現度) |
 | `ScriptedBill` | 並びを固定する紙幣1枚(本物か、欠ける要素と再現度、ヒント) |
@@ -29,7 +29,7 @@
 |---|---|
 | `Banknote` | 紙幣1枚。券種、記番号、要素ごとの再現度。全要素が `MAX_LEVEL` なら本物 |
 | `BanknoteFactory` | 本物の生成と、CPUの偽造(GameDesign.md 6.1節)。予算で再現度を買い、記番号の再現度が足りなければ一覧外の発行局コードにする |
-| `InspectionShift` | 1シフトの進行。紙幣の列、道具の残り回数と「この紙幣で使用済み」、判定と得点。紙幣の並びが `ShiftConfig` で固定されていればCPUの偽造の代わりにそれを使う |
+| `InspectionShift` | 1シフトの進行。紙幣の列、判定と得点。紙幣の並びが `ShiftConfig` で固定されていればCPUの偽造の代わりにそれを使う |
 | `BestScore` | ベストスコアの読み書き(`user://`)。研修シフトは記録しない |
 
 乱数はすべて呼び出し側が渡す `RandomNumberGenerator` を使う(テストで再現できるようにするため)。
@@ -49,4 +49,4 @@
 - `bash tools/check.sh`: gdformat → gdlint → `tools/tests/run_tests.gd` → 起動スモーク
 - `bash tools/check.sh --web`: 上に加えて Web 書き出しと、書き出した pck に対する `run_tests.gd`
 - 書き出した版をブラウザで見るときは `.claude/launch.json` の `web-build`(`build/web/` を 8060 番で配信)
-- `run_tests.gd` は `scripts/core/` とデータの整合を見る(偽札は必ず欠陥を持つ、予算を超えない、道具の回数、得点、研修の並び、ベストスコア)
+- `run_tests.gd` は `scripts/core/` とデータの整合を見る(偽札は必ず欠陥を持つ、予算を超えない、得点、研修の並び、ベストスコア)

@@ -74,19 +74,9 @@ func _test_shift_composition() -> void:
 
 
 func _test_tools() -> void:
-	var shift := InspectionShift.new(_config, _currency, _rng(3))
-	var loupe := GameEnums.Tool.LOUPE
-	var start := shift.uses_left(loupe)
-	_check(shift.is_unlocked(GameEnums.Tool.NAKED_EYE), "目視は常に使える")
-	_check(shift.use_tool(loupe), "ルーペを使える")
-	_check(shift.use_tool(loupe), "同じ紙幣では再度使っても減らない")
-	_check(shift.uses_left(loupe) == start - 1, "ルーペの残りが1減る")
-	shift.judge(GameEnums.Verdict.ACCEPT)
-	_check(not shift.is_unlocked(loupe), "次の紙幣では使い直しが要る")
-	for i in start:
-		shift.use_tool(loupe)
-		shift.judge(GameEnums.Verdict.ACCEPT)
-	_check(not shift.use_tool(loupe), "使い切ったら使えない")
+	for tool_data in _config.tools:
+		_check(tool_data.tool != GameEnums.Tool.NAKED_EYE, "目視は道具の一覧に入れない")
+		_check(not tool_data.display_name.is_empty(), "道具に表示名がある")
 
 
 func _test_scoring() -> void:

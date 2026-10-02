@@ -11,9 +11,6 @@ var score := 0
 ## { "note": Banknote, "verdict": GameEnums.Verdict, "points": int, "correct": bool }
 var results: Array[Dictionary] = []
 
-var _uses_left := {}
-var _unlocked := {}
-
 
 func _init(
 	shift_config: ShiftConfig, currency_data: CurrencyData, rng: RandomNumberGenerator
@@ -24,8 +21,6 @@ func _init(
 		_deal_cpu_bills(rng)
 	else:
 		_deal_scripted_bills(rng)
-	for tool_data in config.tools:
-		_uses_left[tool_data.tool] = tool_data.uses_per_shift
 
 
 func current_bill() -> Banknote:
@@ -49,25 +44,6 @@ func is_finished() -> bool:
 	return current_index >= bills.size()
 
 
-func uses_left(tool: GameEnums.Tool) -> int:
-	return _uses_left.get(tool, 0)
-
-
-func is_unlocked(tool: GameEnums.Tool) -> bool:
-	return tool == GameEnums.Tool.NAKED_EYE or _unlocked.has(tool)
-
-
-## いま見ている紙幣で道具を使えるようにする。使えたら true
-func use_tool(tool: GameEnums.Tool) -> bool:
-	if is_unlocked(tool):
-		return true
-	if uses_left(tool) <= 0:
-		return false
-	_uses_left[tool] -= 1
-	_unlocked[tool] = true
-	return true
-
-
 func judge(verdict: GameEnums.Verdict) -> Dictionary:
 	var note := current_bill()
 	var points := points_for(config, note.is_genuine(), verdict)
@@ -79,7 +55,6 @@ func judge(verdict: GameEnums.Verdict) -> Dictionary:
 	results.append(result)
 	score += points
 	current_index += 1
-	_unlocked.clear()
 	return result
 
 

@@ -38,19 +38,16 @@ hint = "UVライトで額面の数字と紙の光り方を見てみましょう�
 [sub_resource type="Resource" id="Resource_ipp1v"]
 script = ExtResource("3_gcs0x")
 display_name = "ルーペ"
-uses_per_shift = 2
 
 [sub_resource type="Resource" id="Resource_efx5h"]
 script = ExtResource("3_gcs0x")
 tool = 2
 display_name = "透過ライト"
-uses_per_shift = 2
 
 [sub_resource type="Resource" id="Resource_u185u"]
 script = ExtResource("3_gcs0x")
 tool = 3
 display_name = "UVライト"
-uses_per_shift = 2
 
 [resource]
 script = ExtResource("1_457ka")
