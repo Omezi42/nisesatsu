@@ -26,6 +26,7 @@ GameDesign.md 第11章の開発段階を、マイルストーンと「次へ進�
 - [x] ベストスコアの保存と表示(第6章)
 - [x] Web書き出しプリセット(GL Compatibility・スレッドなし)
 - [x] 書き出した pck に対してヘッドレステストを回す仕組みを `check.sh` に足す
+- [x] unityroom のスコアランキングへ本番シフトの得点を送る(第6章)
 - [ ] unityroom へテスト公開(アップロードはユーザー)
 - [x] ビルド用 Skill(`.claude/skills/build-web/`)
 
