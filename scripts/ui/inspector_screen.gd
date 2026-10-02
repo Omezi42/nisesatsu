@@ -20,8 +20,8 @@ const TIMER_WARN_SECONDS := 5.0
 const STATUS_POS := Vector2(56, 640)
 const HINT_POS := Vector2(56, 604)
 ## 裏のタブから戻った直後の大きな delta で時間切れにしない(docs/Pitfalls.md「Web版」)
-const MAX_FRAME_SECONDS := 0.25
-const PAUSE_SHADE := Color(0.05, 0.07, 0.06, 0.96)
+const MAX_FRAME_SECONDS := 1.0
+const PAUSE_SHADE := Color(0.05, 0.07, 0.06)
 const PAUSE_BUTTON_SIZE := Vector2(280, 72)
 const MODE_LABELS := {
 	GameEnums.ViewMode.NORMAL: "目視",

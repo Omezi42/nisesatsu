@@ -8,6 +8,7 @@
 | `scripts/core/` | UIから独立した規則。ヘッドレステストで回し、将来はサーバー側でも同じ判定を再現する |
 | `scripts/ui/` | 画面。UIはコードで組み、シーンは `scenes/main.tscn` の1つだけ |
 | `tools/` | `check.sh`、テスト、シーン編集用のパッチスクリプト |
+| `build/web/` | Web 書き出しの出力(git 管理外)。プリセットは `export_presets.cfg` の「Web」(スレッドなし) |
 
 ## 2. データ(`scripts/data/`)
 | クラス | 役割 |
@@ -17,6 +18,7 @@
 | `ToolData` | 道具1つ。シフトあたりの使用回数 |
 | `DenominationData` | 券種。額面と地色 |
 | `CurrencyData` | 通貨。券種・要素・発行局コード一覧・微小文字。`MAX_LEVEL`(=3、本物の再現度) |
+| `ScriptedBill` | 並びを固定する紙幣1枚(本物か、欠ける要素と再現度、ヒント) |
 | `ShiftConfig` | 1シフトの枚数・偽札の割合・持ち時間・道具・得点・CPUの予算。研修シフトは別の `.tres`(`shift_training.tres`)で、固定の紙幣の並びとヒントを持つ(持ち時間0は無制限) |
 
 要素や道具を足すときは `.tres` を足して `CurrencyData` / `ShiftConfig` の配列へ入れる。描き分けだけは `BanknotePainter` に足す。
@@ -44,4 +46,6 @@
 
 ## 5. 検証
 - `bash tools/check.sh`: gdformat → gdlint → `tools/tests/run_tests.gd` → 起動スモーク
-- `run_tests.gd` は `scripts/core/` とデータの整合を見る(偽札は必ず欠陥を持つ、予算を超えない、道具の回数、得点)
+- `bash tools/check.sh --web`: 上に加えて Web 書き出しと、書き出した pck に対する `run_tests.gd`
+- 書き出した版をブラウザで見るときは `.claude/launch.json` の `web-build`(`build/web/` を 8060 番で配信)
+- `run_tests.gd` は `scripts/core/` とデータの整合を見る(偽札は必ず欠陥を持つ、予算を超えない、道具の回数、得点、研修の並び、ベストスコア)

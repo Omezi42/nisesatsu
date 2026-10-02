@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 変更後の検証を1コマンドにまとめる: gdformat → gdlint → ヘッドレステスト → 起動スモーク。
 # 引数なし: git で変更のある .gd だけを整形・lint する。--all: scripts/ と tools/ の全 .gd。
+# --web: Web 書き出し(build/web/)と、書き出した pck に対するテストも回す(--all と併用可)。
 # 出力は要点だけに絞る(ログ全文は logs/check_*.log)。
 set -u
 GODOT="${GODOT:-C:/Users/omezi/Documents/Godot_v4.6.2-stable_win64_console.exe}"
@@ -10,7 +11,16 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 mkdir -p logs
 
-if [ "${1:-}" = "--all" ]; then
+ALL=0
+WEB=0
+for arg in "$@"; do
+  case "$arg" in
+    --all) ALL=1 ;;
+    --web) WEB=1 ;;
+  esac
+done
+
+if [ $ALL -eq 1 ]; then
   FILES=$(git ls-files -co --exclude-standard 'scripts/*.gd' 'scripts/**/*.gd' 'tools/*.gd' 'tools/**/*.gd' | grep -v '^tools/godot_apply_patch.gd$')
 else
   FILES=$( (git diff --name-only; git diff --cached --name-only; git ls-files --others --exclude-standard) | sort -u | grep '\.gd$' | grep -v '^tools/godot_apply_patch.gd$' | grep -v '^\.agents/' | while read -r f; do [ -f "$f" ] && echo "$f"; done)
@@ -47,6 +57,24 @@ if grep -E "SCRIPT ERROR|Parse Error|Failed to load|ERROR:" logs/check_smoke.log
   status=1
 else
   echo "ok"
+fi
+
+if [ $WEB -eq 1 ]; then
+  # .tres が .tres.remap になる差異は書き出した pck でしか出ない(docs/Pitfalls.md)
+  echo "== web export"
+  rm -rf build/web && mkdir -p build/web
+  timeout "$GODOT_TIMEOUT" "$GODOT" --headless --path . --export-release "Web" build/web/index.html > logs/check_export.log 2>&1
+  if [ -f build/web/index.pck ] && [ -f build/web/index.wasm ]; then
+    echo "ok"
+    echo "== tests on exported pck"
+    timeout "$GODOT_TIMEOUT" "$GODOT" --headless --main-pack build/web/index.pck --script res://tools/tests/run_tests.gd > logs/check_pck.log 2>&1
+    grep -E "tests passed|FAILED|SCRIPT ERROR|Parse Error" logs/check_pck.log | head -20
+    grep -qE "FAILED|SCRIPT ERROR|Parse Error" logs/check_pck.log && status=1
+    grep -q "tests passed" logs/check_pck.log || status=1
+  else
+    echo "書き出しに失敗 (logs/check_export.log)"
+    status=1
+  fi
 fi
 
 [ $status -eq 0 ] && echo "== ALL OK" || echo "== NG (logs/check_*.log)"
