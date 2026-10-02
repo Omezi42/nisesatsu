@@ -8,6 +8,7 @@
 | `scripts/core/` | UIから独立した規則。ヘッドレステストで回し、将来はサーバー側でも同じ判定を再現する |
 | `scripts/ui/` | 画面。UIはコードで組み、シーンは `scenes/main.tscn` の1つだけ |
 | `tools/` | `check.sh`、テスト、シーン編集用のパッチスクリプト |
+| `tools/make_icon.sh` | unityroom のアイコンGIF。`render_icon_frames.gd` が本体と同じ描画でコマを書き出し、`make_icon_gif.py`(Pillow)がまとめる |
 | `build/web/` | Web 書き出しの出力(git 管理外)。プリセットは `export_presets.cfg` の「Web」(スレッドなし) |
 
 ## 2. データ(`scripts/data/`)
