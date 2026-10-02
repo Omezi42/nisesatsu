@@ -4,6 +4,8 @@ extends Control
 
 const CURRENCY_PATH := "res://data/lumeria.tres"
 const SHIFT_PATH := "res://data/shift_default.tres"
+const TRAINING_PATH := "res://data/shift_training.tres"
+const START_BUTTON_SIZE := Vector2(280, 72)
 const TITLE_POS := Vector2(120, 150)
 const RULES := (
 	"窓口に持ち込まれるルメリア紙幣を、1枚ずつ受理するか拒否するか決めてください。\n"
@@ -13,6 +15,8 @@ const RULES := (
 
 var _currency: CurrencyData = load(CURRENCY_PATH)
 var _config: ShiftConfig = load(SHIFT_PATH)
+var _training: ShiftConfig = load(TRAINING_PATH)
+var _best_label: Label
 var _title: Control
 var _inspector: InspectorScreen
 var _result: ResultScreen
@@ -25,20 +29,26 @@ func _ready() -> void:
 	_inspector.shift_finished.connect(_on_shift_finished)
 	add_child(_inspector)
 	_result = ResultScreen.new()
-	_result.retry_requested.connect(_start_shift)
+	_result.retry_requested.connect(_start_shift.bind(_config))
 	add_child(_result)
+	_show_title()
+
+
+func _show_title() -> void:
+	_best_label.text = "ベストスコア %d" % BestScore.best() if BestScore.has_record() else ""
 	_show_only(_title)
 
 
-func _start_shift() -> void:
+func _start_shift(config: ShiftConfig) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	_show_only(_inspector)
-	_inspector.start(InspectionShift.new(_config, _currency, rng))
+	_inspector.start(InspectionShift.new(config, _currency, rng))
 
 
 func _on_shift_finished(shift: InspectionShift) -> void:
-	_result.show_shift(shift)
+	var new_record := shift.config.records_best_score and BestScore.submit(shift.score)
+	_result.show_shift(shift, new_record)
 	_show_only(_result)
 
 
@@ -59,7 +69,15 @@ func _build_title() -> Control:
 	box.add_child(UiKit.label("ニセサツ", 64))
 	box.add_child(UiKit.label("鑑定士モード（試作）", 28, UiKit.TEXT_DIM))
 	box.add_child(UiKit.label(RULES, 20))
-	var start := UiKit.button("シフト開始", 28, Vector2(280, 72), UiKit.ACCEPT)
-	start.pressed.connect(_start_shift)
-	box.add_child(start)
+	var buttons := HBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 24)
+	box.add_child(buttons)
+	var training := UiKit.button("研修", 28, START_BUTTON_SIZE)
+	training.pressed.connect(_start_shift.bind(_training))
+	buttons.add_child(training)
+	var start := UiKit.button("本番シフト", 28, START_BUTTON_SIZE, UiKit.ACCEPT)
+	start.pressed.connect(_start_shift.bind(_config))
+	buttons.add_child(start)
+	_best_label = UiKit.label("", 22, UiKit.TEXT_DIM)
+	box.add_child(_best_label)
 	return screen

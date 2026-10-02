@@ -7,7 +7,7 @@ signal retry_requested
 
 const SCREEN_SIZE := Vector2(1280, 720)
 const CONTENT_POS := Vector2(80, 40)
-const LIST_SIZE := Vector2(1120, 470)
+const LIST_SIZE := Vector2(1120, 420)
 const VERDICT_LABELS := {
 	GameEnums.Verdict.ACCEPT: "受理",
 	GameEnums.Verdict.REJECT: "拒否",
@@ -15,6 +15,8 @@ const VERDICT_LABELS := {
 }
 
 var _summary: Label
+var _best: Label
+var _retry: Button
 var _list: VBoxContainer
 
 
@@ -23,7 +25,7 @@ func _ready() -> void:
 	_build()
 
 
-func show_shift(shift: InspectionShift) -> void:
+func show_shift(shift: InspectionShift, new_record: bool) -> void:
 	for child in _list.get_children():
 		child.queue_free()
 	var correct := 0
@@ -36,6 +38,13 @@ func show_shift(shift: InspectionShift) -> void:
 		"得点 %d　　正解 %d / %d　　偽札 %d 枚"
 		% [shift.score, correct, shift.results.size(), shift.fake_count()]
 	)
+	_best.add_theme_color_override("font_color", UiKit.HINT if new_record else UiKit.TEXT_DIM)
+	if not shift.config.records_best_score:
+		_best.text = "研修の得点はベストスコアに記録されません"
+		_retry.text = "本番シフトへ"
+		return
+	_best.text = ("ベストスコア更新！" if new_record else "ベストスコア %d" % BestScore.best())
+	_retry.text = "次のシフトへ"
 
 
 func _draw() -> void:
@@ -73,6 +82,8 @@ func _build() -> void:
 	root.add_child(UiKit.label("シフト終了", 34))
 	_summary = UiKit.label("", 24)
 	root.add_child(_summary)
+	_best = UiKit.label("", 22, UiKit.TEXT_DIM)
+	root.add_child(_best)
 
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = LIST_SIZE
@@ -82,6 +93,6 @@ func _build() -> void:
 	_list.add_theme_constant_override("separation", 8)
 	scroll.add_child(_list)
 
-	var retry := UiKit.button("次のシフトへ", 24, Vector2(260, 64), UiKit.ACCEPT)
-	retry.pressed.connect(func() -> void: retry_requested.emit())
-	root.add_child(retry)
+	_retry = UiKit.button("", 24, Vector2(260, 64), UiKit.ACCEPT)
+	_retry.pressed.connect(func() -> void: retry_requested.emit())
+	root.add_child(_retry)

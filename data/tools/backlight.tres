@@ -6,4 +6,4 @@
 script = ExtResource("1_qhpk1")
 tool = 2
 display_name = "透過ライト"
-uses_per_shift = 5
+uses_per_shift = 3

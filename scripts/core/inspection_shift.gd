@@ -20,16 +20,10 @@ func _init(
 ) -> void:
 	config = shift_config
 	currency = currency_data
-	var fake_flags := _fake_flags(rng)
-	var last_index := maxi(config.bill_count - 1, 1)
-	for i in config.bill_count:
-		if fake_flags[i]:
-			var budget := roundi(
-				lerpf(config.cpu_budget_start, config.cpu_budget_end, float(i) / last_index)
-			)
-			bills.append(BanknoteFactory.make_fake(currency, budget, config, rng))
-		else:
-			bills.append(BanknoteFactory.make_genuine(currency, rng))
+	if config.scripted_bills.is_empty():
+		_deal_cpu_bills(rng)
+	else:
+		_deal_scripted_bills(rng)
 	for tool_data in config.tools:
 		_uses_left[tool_data.tool] = tool_data.uses_per_shift
 
@@ -38,6 +32,17 @@ func current_bill() -> Banknote:
 	if is_finished():
 		return null
 	return bills[current_index]
+
+
+## いまの紙幣に添えるヒント。無ければ空
+func current_hint() -> String:
+	if is_finished() or config.scripted_bills.is_empty():
+		return ""
+	return config.scripted_bills[current_index].hint
+
+
+func has_time_limit() -> bool:
+	return config.seconds_per_bill > 0.0
 
 
 func is_finished() -> bool:
@@ -93,6 +98,31 @@ static func points_for(cfg: ShiftConfig, genuine: bool, verdict: GameEnums.Verdi
 		GameEnums.Verdict.REJECT:
 			return cfg.score_reject_genuine if genuine else cfg.score_reject_fake
 	return cfg.score_timeout
+
+
+func _deal_cpu_bills(rng: RandomNumberGenerator) -> void:
+	var fake_flags := _fake_flags(rng)
+	var last_index := maxi(config.bill_count - 1, 1)
+	for i in config.bill_count:
+		if fake_flags[i]:
+			var budget := roundi(
+				lerpf(config.cpu_budget_start, config.cpu_budget_end, float(i) / last_index)
+			)
+			bills.append(BanknoteFactory.make_fake(currency, budget, config, rng))
+		else:
+			bills.append(BanknoteFactory.make_genuine(currency, rng))
+
+
+func _deal_scripted_bills(rng: RandomNumberGenerator) -> void:
+	for scripted in config.scripted_bills:
+		if scripted.fake:
+			bills.append(
+				BanknoteFactory.make_with_defect(
+					currency, scripted.defect_feature, scripted.defect_level, rng
+				)
+			)
+		else:
+			bills.append(BanknoteFactory.make_genuine(currency, rng))
 
 
 func _fake_flags(rng: RandomNumberGenerator) -> Array[bool]:

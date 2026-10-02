@@ -27,6 +27,17 @@ static func make_fake(
 	return note
 
 
+## 1要素だけ欠けた偽札(研修シフト用)
+static func make_with_defect(
+	currency: CurrencyData, feature: GameEnums.Feature, level: int, rng: RandomNumberGenerator
+) -> Banknote:
+	var note := make_genuine(currency, rng)
+	note.levels[feature] = level
+	if feature == GameEnums.Feature.SERIAL:
+		note.issuer_code = invalid_issuer_code(currency, rng)
+	return note
+
+
 static func buy_levels(
 	currency: CurrencyData, budget: int, config: ShiftConfig, rng: RandomNumberGenerator
 ) -> Dictionary:

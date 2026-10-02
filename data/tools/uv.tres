@@ -6,4 +6,4 @@
 script = ExtResource("1_bidl8")
 tool = 3
 display_name = "UVライト"
-uses_per_shift = 4
+uses_per_shift = 2

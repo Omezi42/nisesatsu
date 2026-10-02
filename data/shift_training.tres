@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="ShiftConfig" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/shift_config.gd" id="1_457ka"]
+[ext_resource type="Script" path="res://scripts/data/scripted_bill.gd" id="2_al7hj"]
+[ext_resource type="Script" path="res://scripts/data/tool_data.gd" id="3_gcs0x"]
+
+[sub_resource type="Resource" id="Resource_cetun"]
+script = ExtResource("2_al7hj")
+hint = "本物は見本帳と見比べて受理しましょう。"
+
+[sub_resource type="Resource" id="Resource_31oun"]
+script = ExtResource("2_al7hj")
+fake = true
+hint = "目視で中央のロゼットを見本帳と見比べてみましょう。"
+
+[sub_resource type="Resource" id="Resource_m255o"]
+script = ExtResource("2_al7hj")
+fake = true
+defect_feature = 4
+hint = "ルーペで下端の微小文字を読んでみましょう。"
+
+[sub_resource type="Resource" id="Resource_so3ka"]
+script = ExtResource("2_al7hj")
+hint = "本物は見本帳と見比べて受理しましょう。"
+
+[sub_resource type="Resource" id="Resource_oujxp"]
+script = ExtResource("2_al7hj")
+fake = true
+defect_feature = 3
+hint = "透過ライトで右の透かし窓を見てみましょう。"
+
+[sub_resource type="Resource" id="Resource_t2vih"]
+script = ExtResource("2_al7hj")
+fake = true
+defect_feature = 5
+hint = "UVライトで額面の数字と紙の光り方を見てみましょう。"
+
+[sub_resource type="Resource" id="Resource_ipp1v"]
+script = ExtResource("3_gcs0x")
+display_name = "ルーペ"
+uses_per_shift = 2
+
+[sub_resource type="Resource" id="Resource_efx5h"]
+script = ExtResource("3_gcs0x")
+tool = 2
+display_name = "透過ライト"
+uses_per_shift = 2
+
+[sub_resource type="Resource" id="Resource_u185u"]
+script = ExtResource("3_gcs0x")
+tool = 3
+display_name = "UVライト"
+uses_per_shift = 2
+
+[resource]
+script = ExtResource("1_457ka")
+title = "研修"
+seconds_per_bill = 0.0
+tools = Array[ExtResource("3_gcs0x")]([SubResource("Resource_ipp1v"), SubResource("Resource_efx5h"), SubResource("Resource_u185u")])
+records_best_score = false
+scripted_bills = Array[ExtResource("2_al7hj")]([SubResource("Resource_cetun"), SubResource("Resource_31oun"), SubResource("Resource_m255o"), SubResource("Resource_so3ka"), SubResource("Resource_oujxp"), SubResource("Resource_t2vih")])

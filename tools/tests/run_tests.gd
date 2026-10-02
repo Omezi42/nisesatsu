@@ -2,6 +2,8 @@ extends SceneTree
 
 const CURRENCY_PATH := "res://data/lumeria.tres"
 const SHIFT_PATH := "res://data/shift_default.tres"
+const TRAINING_PATH := "res://data/shift_training.tres"
+const TEST_BEST_PATH := "user://test_best_score.cfg"
 const SAMPLE_SHIFTS := 200
 
 var _failures := 0
@@ -24,6 +26,8 @@ func _run() -> void:
 		_test_shift_composition()
 		_test_tools()
 		_test_scoring()
+		_test_training()
+		_test_best_score()
 
 	if _failures > 0:
 		printerr("tests FAILED: ", _failures)
@@ -116,6 +120,40 @@ func _test_scoring() -> void:
 		),
 		"時間切れの減点"
 	)
+
+
+func _test_training() -> void:
+	var training: ShiftConfig = load(TRAINING_PATH)
+	_check(training != null, "研修シフトが読める")
+	if training == null:
+		return
+	_check(not training.records_best_score, "研修はベストスコアに記録しない")
+	var shift := InspectionShift.new(training, _currency, _rng(5))
+	_check(not shift.has_time_limit(), "研修は持ち時間なし")
+	_check(shift.bills.size() == training.scripted_bills.size(), "研修の枚数は固定の並びのとおり")
+	var seen_tools := {}
+	for i in shift.bills.size():
+		var scripted: ScriptedBill = training.scripted_bills[i]
+		var note := shift.bills[i]
+		_check(not shift.current_hint().is_empty(), "研修の紙幣にはヒントがある")
+		_check(note.is_genuine() != scripted.fake, "研修の本物・偽札が並びのとおり")
+		if scripted.fake:
+			_check(note.defects().size() == 1, "研修の偽札は欠陥が1か所")
+			_check(note.level(scripted.defect_feature) == scripted.defect_level, "研修の再現度")
+			seen_tools[_currency.feature_data(scripted.defect_feature).tool] = true
+		shift.judge(GameEnums.Verdict.ACCEPT)
+	_check(seen_tools.size() == GameEnums.Tool.size(), "研修で全ての道具を使う偽札が出る")
+
+
+func _test_best_score() -> void:
+	DirAccess.remove_absolute(TEST_BEST_PATH)
+	_check(not BestScore.has_record(TEST_BEST_PATH), "初回は記録なし")
+	_check(BestScore.submit(-50, TEST_BEST_PATH), "初回はマイナスでも記録する")
+	_check(BestScore.submit(300, TEST_BEST_PATH), "上回れば更新")
+	_check(not BestScore.submit(300, TEST_BEST_PATH), "同点は更新しない")
+	_check(not BestScore.submit(100, TEST_BEST_PATH), "下回れば更新しない")
+	_check(BestScore.best(TEST_BEST_PATH) == 300, "最高得点が残る")
+	DirAccess.remove_absolute(TEST_BEST_PATH)
 
 
 func _cost_of(note: Banknote) -> int:

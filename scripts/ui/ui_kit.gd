@@ -14,6 +14,7 @@ const ACCEPT := Color(0.24, 0.42, 0.28)
 const REJECT := Color(0.55, 0.20, 0.17)
 const GOOD := Color(0.55, 0.85, 0.55)
 const BAD := Color(0.95, 0.45, 0.40)
+const HINT := Color(0.95, 0.80, 0.45)
 const CORNER := 6
 const BORDER := 2
 

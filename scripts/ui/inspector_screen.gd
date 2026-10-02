@@ -18,6 +18,11 @@ const TIMER_POS := Vector2(56, 104)
 const TIMER_SIZE := Vector2(720, 14)
 const TIMER_WARN_SECONDS := 5.0
 const STATUS_POS := Vector2(56, 640)
+const HINT_POS := Vector2(56, 604)
+## 裏のタブから戻った直後の大きな delta で時間切れにしない(docs/Pitfalls.md「Web版」)
+const MAX_FRAME_SECONDS := 0.25
+const PAUSE_SHADE := Color(0.05, 0.07, 0.06, 0.96)
+const PAUSE_BUTTON_SIZE := Vector2(280, 72)
 const MODE_LABELS := {
 	GameEnums.ViewMode.NORMAL: "目視",
 	GameEnums.ViewMode.BACKLIGHT: "透過ライト",
@@ -37,6 +42,9 @@ var _score_label: Label
 var _mode_label: Label
 var _status_label: Label
 var _timer_bar: ProgressBar
+var _title_label: Label
+var _hint_label: Label
+var _pause: Control
 
 
 func _ready() -> void:
@@ -46,6 +54,9 @@ func _ready() -> void:
 
 func start(shift: InspectionShift) -> void:
 	_shift = shift
+	_title_label.text = shift.config.title
+	_timer_bar.visible = shift.has_time_limit()
+	_pause.visible = false
 	_rebuild_tool_buttons()
 	_book.setup(shift.currency)
 	_book.visible = false
@@ -54,13 +65,24 @@ func start(shift: InspectionShift) -> void:
 
 
 func _process(delta: float) -> void:
-	if _shift == null or _shift.is_finished() or not visible:
+	if not _is_running() or _pause.visible or not _shift.has_time_limit():
 		return
-	_time_left -= delta
+	_time_left -= minf(delta, MAX_FRAME_SECONDS)
 	_timer_bar.value = _time_left
 	_timer_bar.modulate = UiKit.BAD if _time_left <= TIMER_WARN_SECONDS else Color.WHITE
 	if _time_left <= 0.0:
 		_judge(GameEnums.Verdict.TIMEOUT)
+
+
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+			if _is_running():
+				_pause.visible = true
+
+
+func _is_running() -> bool:
+	return _shift != null and not _shift.is_finished() and visible
 
 
 func _draw() -> void:
@@ -80,6 +102,7 @@ func _show_current() -> void:
 	_set_mode(GameEnums.ViewMode.NORMAL)
 	_progress_label.text = "%d / %d 枚目" % [_shift.current_index + 1, _shift.bills.size()]
 	_score_label.text = "得点 %d" % _shift.score
+	_hint_label.text = _shift.current_hint()
 	_update_tools()
 
 
@@ -159,7 +182,8 @@ func _build() -> void:
 	header.position = HEADER_POS
 	header.add_theme_constant_override("separation", 32)
 	add_child(header)
-	header.add_child(UiKit.label("鑑定窓口", 30))
+	_title_label = UiKit.label("", 30)
+	header.add_child(_title_label)
 	_progress_label = UiKit.label("", 24, UiKit.TEXT_DIM)
 	header.add_child(_progress_label)
 	_score_label = UiKit.label("", 24, UiKit.TEXT_DIM)
@@ -181,6 +205,10 @@ func _build() -> void:
 	_mode_label.position = Vector2(BILL_POS.x, BILL_POS.y + _view.custom_minimum_size.y + 40)
 	add_child(_mode_label)
 
+	_hint_label = UiKit.label("", 20, UiKit.HINT)
+	_hint_label.position = HINT_POS
+	add_child(_hint_label)
+
 	_status_label = UiKit.label("", 20)
 	_status_label.position = STATUS_POS
 	add_child(_status_label)
@@ -189,6 +217,36 @@ func _build() -> void:
 
 	_book = ReferenceBook.new()
 	add_child(_book)
+
+	_pause = _build_pause()
+	add_child(_pause)
+
+
+## 紙幣を隠して時間を止める。見本帳より手前に置く
+func _build_pause() -> Control:
+	var shade := ColorRect.new()
+	shade.color = PAUSE_SHADE
+	shade.anchor_right = 1.0
+	shade.anchor_bottom = 1.0
+	shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	var box := VBoxContainer.new()
+	box.anchor_left = 0.5
+	box.anchor_top = 0.5
+	box.anchor_right = 0.5
+	box.anchor_bottom = 0.5
+	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	box.grow_vertical = Control.GROW_DIRECTION_BOTH
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 24)
+	shade.add_child(box)
+	var label := UiKit.label("一時停止中", 34)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(label)
+	var resume := UiKit.button("再開", 28, PAUSE_BUTTON_SIZE, UiKit.ACCEPT)
+	resume.pressed.connect(func() -> void: _pause.visible = false)
+	box.add_child(resume)
+	shade.visible = false
+	return shade
 
 
 func _build_panel() -> void:
