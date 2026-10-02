@@ -14,12 +14,10 @@ const PANEL_POS := Vector2(860, 120)
 const PANEL_WIDTH := 364.0
 const TOOL_BUTTON_SIZE := Vector2(364, 50)
 const VERDICT_BUTTON_SIZE := Vector2(176, 78)
-const TIMER_POS := Vector2(56, 104)
-const TIMER_SIZE := Vector2(720, 14)
-const TIMER_WARN_SECONDS := 5.0
+const TIME_POS := Vector2(56, 92)
 const STATUS_POS := Vector2(56, 640)
 const HINT_POS := Vector2(56, 604)
-## 裏のタブから戻った直後の大きな delta で時間切れにしない(docs/Pitfalls.md「Web版」)
+## 裏のタブから戻った直後の大きな delta を数えない(docs/Pitfalls.md「Web版」)
 const MAX_FRAME_SECONDS := 1.0
 const PAUSE_SHADE := Color(0.05, 0.07, 0.06)
 const PAUSE_BUTTON_SIZE := Vector2(280, 72)
@@ -30,7 +28,7 @@ const MODE_LABELS := {
 }
 
 var _shift: InspectionShift
-var _time_left := 0.0
+var _elapsed := 0.0
 var _mode: GameEnums.ViewMode = GameEnums.ViewMode.NORMAL
 var _view: BanknoteView
 var _book: ReferenceBook
@@ -40,7 +38,7 @@ var _progress_label: Label
 var _score_label: Label
 var _mode_label: Label
 var _status_label: Label
-var _timer_bar: ProgressBar
+var _time_label: Label
 var _title_label: Label
 var _hint_label: Label
 var _pause: Control
@@ -54,7 +52,7 @@ func _ready() -> void:
 func start(shift: InspectionShift) -> void:
 	_shift = shift
 	_title_label.text = shift.config.title
-	_timer_bar.visible = shift.has_time_limit()
+	_time_label.visible = shift.measures_time()
 	_pause.visible = false
 	_rebuild_tool_buttons()
 	_book.setup(shift.currency)
@@ -64,13 +62,10 @@ func start(shift: InspectionShift) -> void:
 
 
 func _process(delta: float) -> void:
-	if not _is_running() or _pause.visible or not _shift.has_time_limit():
+	if not _is_running() or _pause.visible or not _shift.measures_time():
 		return
-	_time_left -= minf(delta, MAX_FRAME_SECONDS)
-	_timer_bar.value = _time_left
-	_timer_bar.modulate = UiKit.BAD if _time_left <= TIMER_WARN_SECONDS else Color.WHITE
-	if _time_left <= 0.0:
-		_judge(GameEnums.Verdict.TIMEOUT)
+	_elapsed += minf(delta, MAX_FRAME_SECONDS)
+	_update_time_label()
 
 
 func _notification(what: int) -> void:
@@ -94,8 +89,8 @@ func _draw() -> void:
 
 func _show_current() -> void:
 	var note := _shift.current_bill()
-	_time_left = _shift.config.seconds_per_bill
-	_timer_bar.max_value = _shift.config.seconds_per_bill
+	_elapsed = 0.0
+	_update_time_label()
 	_view.loupe_enabled = false
 	_view.show_note(_shift.currency, note)
 	_set_mode(GameEnums.ViewMode.NORMAL)
@@ -103,6 +98,11 @@ func _show_current() -> void:
 	_score_label.text = "得点 %d" % _shift.score
 	_hint_label.text = _shift.current_hint()
 	_update_tools()
+
+
+func _update_time_label() -> void:
+	var bonus := InspectionShift.speed_bonus_for(_shift.config, _elapsed)
+	_time_label.text = "経過 %.1f 秒　速さボーナス +%d" % [_elapsed, bonus]
 
 
 func _on_tool_pressed(tool: GameEnums.Tool) -> void:
@@ -131,14 +131,11 @@ func _set_mode(mode: GameEnums.ViewMode) -> void:
 
 
 func _judge(verdict: GameEnums.Verdict) -> void:
-	_shift.judge(verdict)
-	match verdict:
-		GameEnums.Verdict.ACCEPT:
-			_status_label.text = "紙幣を受け取りました。"
-		GameEnums.Verdict.REJECT:
-			_status_label.text = "紙幣を突き返しました。"
-		_:
-			_status_label.text = "時間切れ。客は待ちきれずに帰ってしまった。"
+	_shift.judge(verdict, _elapsed)
+	if verdict == GameEnums.Verdict.ACCEPT:
+		_status_label.text = "紙幣を受け取りました。"
+	else:
+		_status_label.text = "紙幣を突き返しました。"
 	if _shift.is_finished():
 		_book.visible = false
 		shift_finished.emit(_shift)
@@ -179,13 +176,9 @@ func _build() -> void:
 	_score_label = UiKit.label("", 24, UiKit.TEXT_DIM)
 	header.add_child(_score_label)
 
-	_timer_bar = ProgressBar.new()
-	_timer_bar.position = TIMER_POS
-	_timer_bar.size = TIMER_SIZE
-	_timer_bar.show_percentage = false
-	_timer_bar.add_theme_stylebox_override("background", UiKit.panel_style(UiKit.DESK_EDGE))
-	_timer_bar.add_theme_stylebox_override("fill", UiKit.panel_style(UiKit.TEXT_DIM))
-	add_child(_timer_bar)
+	_time_label = UiKit.label("", 20, UiKit.TEXT_DIM)
+	_time_label.position = TIME_POS
+	add_child(_time_label)
 
 	_view = BanknoteView.new()
 	_view.position = BILL_POS

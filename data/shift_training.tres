@@ -52,7 +52,7 @@ display_name = "UVライト"
 [resource]
 script = ExtResource("1_457ka")
 title = "研修"
-seconds_per_bill = 0.0
+measures_time = false
 tools = Array[ExtResource("3_gcs0x")]([SubResource("Resource_ipp1v"), SubResource("Resource_efx5h"), SubResource("Resource_u185u")])
 records_best_score = false
 scripted_bills = Array[ExtResource("2_al7hj")]([SubResource("Resource_cetun"), SubResource("Resource_31oun"), SubResource("Resource_m255o"), SubResource("Resource_so3ka"), SubResource("Resource_oujxp"), SubResource("Resource_t2vih")])

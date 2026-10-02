@@ -88,6 +88,7 @@ func _test_scoring() -> void:
 		var result := shift.judge(verdict)
 		_check(result["correct"], "正しい判定は正解になる")
 		expected += _config.score_accept_genuine if genuine else _config.score_reject_fake
+		expected += _config.speed_bonus_max
 	_check(shift.score == expected, "満点の得点")
 	_check(
 		(
@@ -103,13 +104,23 @@ func _test_scoring() -> void:
 		),
 		"誤拒否の減点"
 	)
-	_check(
-		(
-			InspectionShift.points_for(_config, true, GameEnums.Verdict.TIMEOUT)
-			== _config.score_timeout
-		),
-		"時間切れの減点"
-	)
+	_test_speed_bonus()
+
+
+func _test_speed_bonus() -> void:
+	_check(InspectionShift.speed_bonus_for(_config, 0.0) == _config.speed_bonus_max, "即答は満額")
+	var expected := _config.speed_bonus_max - _config.speed_bonus_per_second * 3
+	_check(InspectionShift.speed_bonus_for(_config, 3.9) == expected, "速さボーナスは秒の切り捨てで減る")
+	_check(InspectionShift.speed_bonus_for(_config, 999.0) == 0, "速さボーナスは0未満にならない")
+	var shift := InspectionShift.new(_config, _currency, _rng(6))
+	var genuine := shift.current_bill().is_genuine()
+	var wrong := GameEnums.Verdict.REJECT if genuine else GameEnums.Verdict.ACCEPT
+	_check(shift.judge(wrong, 1.0)["speed_bonus"] == 0, "間違いには速さボーナスを付けない")
+	genuine = shift.current_bill().is_genuine()
+	var right := GameEnums.Verdict.ACCEPT if genuine else GameEnums.Verdict.REJECT
+	var bonus: int = shift.judge(right, 2.0)["speed_bonus"]
+	_check(bonus == InspectionShift.speed_bonus_for(_config, 2.0), "正解には速さボーナス")
+	_check(is_equal_approx(shift.total_seconds(), 3.0), "合計時間")
 
 
 func _test_training() -> void:
@@ -119,7 +130,7 @@ func _test_training() -> void:
 		return
 	_check(not training.records_best_score, "研修はベストスコアに記録しない")
 	var shift := InspectionShift.new(training, _currency, _rng(5))
-	_check(not shift.has_time_limit(), "研修は持ち時間なし")
+	_check(not shift.measures_time(), "研修は秒数を計らない")
 	_check(shift.bills.size() == training.scripted_bills.size(), "研修の枚数は固定の並びのとおり")
 	var seen_tools := {}
 	for i in shift.bills.size():

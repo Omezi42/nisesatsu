@@ -6,8 +6,8 @@ extends Resource
 @export var bill_count := 12
 @export var fake_min := 4
 @export var fake_max := 6
-## 0 なら持ち時間なし
-@export var seconds_per_bill := 20.0
+## false なら判定までの秒数を計らず、速さボーナスも付けない
+@export var measures_time := true
 @export var tools: Array[ToolData] = []
 @export var records_best_score := true
 ## 空でなければCPUの偽造の代わりにこの並びで出す(bill_count と偽札の割合は使わない)
@@ -18,7 +18,9 @@ extends Resource
 @export var score_accept_genuine := 50
 @export var score_accept_fake := -150
 @export var score_reject_genuine := -100
-@export var score_timeout := -50
+## 正解したときだけ足す。経過1秒ごとに減り、0未満にはしない
+@export var speed_bonus_max := 50
+@export var speed_bonus_per_second := 2
 
 @export_group("CPU Forger")
 @export var cpu_budget_start := 14

@@ -8,7 +8,8 @@ var currency: CurrencyData
 var bills: Array[Banknote] = []
 var current_index := 0
 var score := 0
-## { "note": Banknote, "verdict": GameEnums.Verdict, "points": int, "correct": bool }
+## { "note": Banknote, "verdict": GameEnums.Verdict, "points": int, "correct": bool,
+##   "seconds": float, "speed_bonus": int }
 var results: Array[Dictionary] = []
 
 
@@ -36,26 +37,42 @@ func current_hint() -> String:
 	return config.scripted_bills[current_index].hint
 
 
-func has_time_limit() -> bool:
-	return config.seconds_per_bill > 0.0
+func measures_time() -> bool:
+	return config.measures_time
 
 
 func is_finished() -> bool:
 	return current_index >= bills.size()
 
 
-func judge(verdict: GameEnums.Verdict) -> Dictionary:
+## seconds は紙幣が出てから判定するまでの秒数(一時停止中を除く)
+func judge(verdict: GameEnums.Verdict, seconds := 0.0) -> Dictionary:
 	var note := current_bill()
-	var points := points_for(config, note.is_genuine(), verdict)
 	var correct := (
 		(note.is_genuine() and verdict == GameEnums.Verdict.ACCEPT)
 		or (not note.is_genuine() and verdict == GameEnums.Verdict.REJECT)
 	)
-	var result := {"note": note, "verdict": verdict, "points": points, "correct": correct}
+	var bonus := speed_bonus_for(config, seconds) if correct and config.measures_time else 0
+	var points := points_for(config, note.is_genuine(), verdict) + bonus
+	var result := {
+		"note": note,
+		"verdict": verdict,
+		"points": points,
+		"correct": correct,
+		"seconds": seconds,
+		"speed_bonus": bonus,
+	}
 	results.append(result)
 	score += points
 	current_index += 1
 	return result
+
+
+func total_seconds() -> float:
+	var total := 0.0
+	for result in results:
+		total += result["seconds"]
+	return total
 
 
 func fake_count() -> int:
@@ -67,12 +84,13 @@ func fake_count() -> int:
 
 
 static func points_for(cfg: ShiftConfig, genuine: bool, verdict: GameEnums.Verdict) -> int:
-	match verdict:
-		GameEnums.Verdict.ACCEPT:
-			return cfg.score_accept_genuine if genuine else cfg.score_accept_fake
-		GameEnums.Verdict.REJECT:
-			return cfg.score_reject_genuine if genuine else cfg.score_reject_fake
-	return cfg.score_timeout
+	if verdict == GameEnums.Verdict.ACCEPT:
+		return cfg.score_accept_genuine if genuine else cfg.score_accept_fake
+	return cfg.score_reject_genuine if genuine else cfg.score_reject_fake
+
+
+static func speed_bonus_for(cfg: ShiftConfig, seconds: float) -> int:
+	return maxi(cfg.speed_bonus_max - cfg.speed_bonus_per_second * floori(seconds), 0)
 
 
 func _deal_cpu_bills(rng: RandomNumberGenerator) -> void:

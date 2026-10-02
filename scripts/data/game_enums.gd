@@ -5,4 +5,4 @@ extends RefCounted
 enum Feature { PATTERN, COLOR, SERIAL, WATERMARK, MICROTEXT, UV_INK }
 enum Tool { NAKED_EYE, LOUPE, BACKLIGHT, UV }
 enum ViewMode { NORMAL, BACKLIGHT, UV }
-enum Verdict { ACCEPT, REJECT, TIMEOUT }
+enum Verdict { ACCEPT, REJECT }

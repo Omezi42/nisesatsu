@@ -11,7 +11,6 @@ const LIST_SIZE := Vector2(1120, 420)
 const VERDICT_LABELS := {
 	GameEnums.Verdict.ACCEPT: "受理",
 	GameEnums.Verdict.REJECT: "拒否",
-	GameEnums.Verdict.TIMEOUT: "時間切れ",
 }
 
 var _summary: Label
@@ -33,11 +32,13 @@ func show_shift(shift: InspectionShift, new_record: bool) -> void:
 		var result: Dictionary = shift.results[i]
 		if result["correct"]:
 			correct += 1
-		_list.add_child(_row(shift.currency, i, result))
+		_list.add_child(_row(shift, i, result))
 	_summary.text = (
 		"得点 %d　　正解 %d / %d　　偽札 %d 枚"
 		% [shift.score, correct, shift.results.size(), shift.fake_count()]
 	)
+	if shift.measures_time():
+		_summary.text += "　　合計 %.1f 秒" % shift.total_seconds()
 	_best.add_theme_color_override("font_color", UiKit.HINT if new_record else UiKit.TEXT_DIM)
 	if not shift.config.records_best_score:
 		_best.text = "研修の得点はベストスコアに記録されません"
@@ -51,7 +52,8 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, SCREEN_SIZE), UiKit.DESK)
 
 
-func _row(currency: CurrencyData, index: int, result: Dictionary) -> Control:
+func _row(shift: InspectionShift, index: int, result: Dictionary) -> Control:
+	var currency := shift.currency
 	var note: Banknote = result["note"]
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 20)
@@ -65,6 +67,11 @@ func _row(currency: CurrencyData, index: int, result: Dictionary) -> Control:
 	)
 	var points: int = result["points"]
 	row.add_child(UiKit.label("%+d" % points, 20, UiKit.GOOD if points > 0 else UiKit.BAD))
+	if shift.measures_time():
+		var timing := "%.1f 秒" % result["seconds"]
+		if result["speed_bonus"] > 0:
+			timing += "（速さ +%d）" % result["speed_bonus"]
+		row.add_child(UiKit.label(timing, 18, UiKit.TEXT_DIM))
 	if not note.is_genuine():
 		var defects: Array[String] = []
 		for feature in note.defects():
