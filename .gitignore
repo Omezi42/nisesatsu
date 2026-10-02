@@ -1,0 +1,9 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# ビルド・ログ・一時ファイル
+/build/
+/logs/
+/tools/tmp_*.gd
+*.bak
