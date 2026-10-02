@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="FeatureData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/feature_data.gd" id="1_8bukc"]
+
+[resource]
+script = ExtResource("1_8bukc")
+display_name = "図柄"
+cost_per_level = 2
+defect_descriptions = Array[String](["線が太くにじむ", "線が揺れる", "花弁が1枚少ない"])

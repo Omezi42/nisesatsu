@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ShiftConfig" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/shift_config.gd" id="1_fk660"]
+[ext_resource type="Script" path="res://scripts/data/tool_data.gd" id="2_2ufqk"]
+[ext_resource type="Resource" path="res://data/tools/loupe.tres" id="3_0qe4t"]
+[ext_resource type="Resource" path="res://data/tools/backlight.tres" id="4_p7jef"]
+[ext_resource type="Resource" path="res://data/tools/uv.tres" id="5_2iic3"]
+
+[resource]
+script = ExtResource("1_fk660")
+tools = Array[ExtResource("2_2ufqk")]([ExtResource("3_0qe4t"), ExtResource("4_p7jef"), ExtResource("5_2iic3")])

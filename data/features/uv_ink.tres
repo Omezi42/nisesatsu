@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FeatureData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/feature_data.gd" id="1_cbrpu"]
+
+[resource]
+script = ExtResource("1_cbrpu")
+feature = 5
+display_name = "UVインク"
+tool = 3
+cost_per_level = 2
+defect_descriptions = Array[String](["UVで何も光らない", "UVで紙全体が光る", "UVで光る色が青い"])

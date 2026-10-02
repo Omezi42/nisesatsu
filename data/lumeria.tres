@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CurrencyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/denomination_data.gd" id="1_sw11x"]
+[ext_resource type="Resource" path="res://data/denominations/lume_10.tres" id="2_qx2e6"]
+[ext_resource type="Resource" path="res://data/denominations/lume_50.tres" id="3_es6yq"]
+[ext_resource type="Resource" path="res://data/denominations/lume_100.tres" id="4_gi5ms"]
+[ext_resource type="Script" path="res://scripts/data/feature_data.gd" id="5_q3lay"]
+[ext_resource type="Resource" path="res://data/features/pattern.tres" id="6_y7ulh"]
+[ext_resource type="Resource" path="res://data/features/color.tres" id="7_upqyu"]
+[ext_resource type="Resource" path="res://data/features/serial.tres" id="8_eceim"]
+[ext_resource type="Resource" path="res://data/features/watermark.tres" id="9_ddeox"]
+[ext_resource type="Resource" path="res://data/features/microtext.tres" id="10_7sg1e"]
+[ext_resource type="Resource" path="res://data/features/uv_ink.tres" id="11_erj6k"]
+[ext_resource type="Script" path="res://scripts/data/currency_data.gd" id="12_h3lle"]
+
+[resource]
+script = ExtResource("12_h3lle")
+currency_name = "ルメリア"
+unit = "ルーメ"
+denominations = Array[ExtResource("1_sw11x")]([ExtResource("2_qx2e6"), ExtResource("3_es6yq"), ExtResource("4_gi5ms")])
+features = Array[ExtResource("5_q3lay")]([ExtResource("6_y7ulh"), ExtResource("7_upqyu"), ExtResource("8_eceim"), ExtResource("9_ddeox"), ExtResource("10_7sg1e"), ExtResource("11_erj6k")])
+issuer_codes = Array[String](["LM", "RA", "VE", "KT", "SN", "NH"])
+microtext = "LUMERIA"

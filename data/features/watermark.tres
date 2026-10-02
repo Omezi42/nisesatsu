@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="FeatureData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/feature_data.gd" id="1_sgl24"]
+
+[resource]
+script = ExtResource("1_sgl24")
+feature = 3
+display_name = "透かし"
+tool = 2
+cost_per_level = 2
+defect_descriptions = Array[String](["透かしが無い", "透かしがぼやけて薄い", "透かしの位置がずれる"])

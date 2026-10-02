@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="FeatureData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/feature_data.gd" id="1_ofamk"]
+
+[resource]
+script = ExtResource("1_ofamk")
+feature = 1
+display_name = "色味"
+defect_descriptions = Array[String](["色が大きくずれる", "色がはっきりずれる", "色がわずかにずれる"])

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DenominationData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/denomination_data.gd" id="1_oy5d0"]
+
+[resource]
+script = ExtResource("1_oy5d0")
+value = 50
+base_color = Color(0.55, 0.26, 0.17, 1)

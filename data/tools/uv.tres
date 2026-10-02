@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ToolData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tool_data.gd" id="1_bidl8"]
+
+[resource]
+script = ExtResource("1_bidl8")
+tool = 3
+display_name = "UVライト"
+uses_per_shift = 4

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="FeatureData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/feature_data.gd" id="1_boki8"]
+
+[resource]
+script = ExtResource("1_boki8")
+feature = 2
+display_name = "記番号"
+defect_descriptions = Array[String](["一覧にない発行局コード", "一覧にない発行局コード", "一覧にない発行局コード"])

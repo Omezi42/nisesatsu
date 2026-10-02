@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ToolData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tool_data.gd" id="1_6j7kb"]
+
+[resource]
+script = ExtResource("1_6j7kb")
+display_name = "ルーペ"
+uses_per_shift = 6
